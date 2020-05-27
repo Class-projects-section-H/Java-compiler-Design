@@ -1,10 +1,10 @@
 import re
 
-list_register=[] #List of Register assigned
+labels=[] #Storing labels
+list_register=[] #List of Register assigned along with the variables
 condition=" "
 def register(operand,flag_print): #Checks if a register is assigned to a variable ,if not a register is assigned
-	# global list_register
-	used_registers=[]
+	used_registers=[] 
 	for i in list_register:
 		used_registers.append(i[0])
 	for i in list_register:  #If variable assigned to register, then it is pushed to the end of list 
@@ -34,36 +34,38 @@ def register(operand,flag_print): #Checks if a register is assigned to a variabl
 				return i
 	
 
-def begin(line):
+def begin(line): 
 	line=line.split(" ")
 	#print(line)
 
 	if(len(line)==1): #labels
-		print(line[0])
+		if(line[0] not in labels):
+			labels.append(line[0])
+			print(line[0])
 		global list_register
-		list_register=[]
+		list_register=[]  #Register gets flushed when labels are encountered
 		return
 
 	if(len(line)==3): #Assignment Operation
 		# global list_register
 		if(re.search("^[0-9]+$", line[2]) or line[2]=="true" or line[2]=="false" ): #checking if the right operand is number
-			var2=register(line[2],1)
+			var2=register(line[2],1) #0 is sent to the function to not print temporary variables present in icg 
 			print("\tSTR r"+str(var2)+" , "+str(line[0]))
-			for i in list_register:
+			for i in list_register: #Assigning register to variable by replacing the value stored in list 
 				if(i[0]==var2):
 					i[1]=line[0]
 					break
-		else:
-			var_temp=register(line[2],1)
-			var2=register(line[0],0)
+		else:  		#If right operand is variable
+			var2=register(line[2],1) #assigning register for right operand
+			register(line[0],0)      #assigning register for left operand
 			if(re.search("^t[0-9]+", line[2])): #For temporary variable
 				for i in list_register:
 					if(i[1]==line[0]):
-						i[0]=var_temp
+						i[0]=var2     #Updating the register value of left operand
 				for i in list_register:
 					if(i[1]==line[2]):
-						list_register.remove(i)
-			print("\tSTR r"+str(var_temp)+" , "+str(line[0]))
+						list_register.remove(i)  #Deallocating register for a temporary variable
+			print("\tSTR r"+str(var2)+" , "+str(line[0]))
 		return
 
 	if(len(line)==5):
@@ -122,8 +124,7 @@ def begin(line):
 
 	
 
-
-file = open("optimized_code.txt", "r")
+file = open("icg.txt", "r")
 for line in file: #Reading the optimized code file
 	line = line.rstrip("\n")
 	begin(line.strip())
