@@ -1,5 +1,4 @@
-# CD_project
-Mini Java Compiler using C .
+## Mini Java Compiler using C .
 
 Instruction to run the compiler :
 
